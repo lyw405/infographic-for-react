@@ -1,5 +1,7 @@
 # API Reference
 
+[中文文档](./API.zh-CN.md)
+
 ## Components
 
 ### `<Infographic />`
@@ -10,11 +12,10 @@ Main component for rendering infographics.
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `dsl` | `string \| DSLString \| TemplateName` | Yes* | - | The DSL string or template name to render. Required if `template` is not provided. |
-| `template` | `string` | Yes* | - | Built-in template name. Required if `dsl` is not provided. |
+| `dsl` | `DSLObject` | Yes | - | The DSL object to render. Supports optional `template`, `theme`, `palette`, `themeConfig` fields. |
 | `overrides` | `DSLOverride[]` | No | `[]` | Array of path-value pairs to override DSL values. |
-| `theme` | `ThemeConfig` | No | - | Theme configuration. |
-| `palette` | `Palette` | No | - | Color palette configuration. |
+| `theme` | `string` | No | - | Theme name. Falls back to `dsl.theme` if not provided. |
+| `palette` | `Palette` | No | - | Color palette. Falls back to `dsl.palette` if not provided (merged into `themeConfig.palette`). |
 | `width` | `number \| string` | No | `'100%'` | Container width. |
 | `height` | `number \| string` | No | `'auto'` | Container height. |
 | `className` | `string` | No | - | Additional CSS class name. |
@@ -31,7 +32,7 @@ The component exposes a ref with the following methods:
 
 - `toDataURL(options?: ExportOptions): Promise<string>` - Export infographic as data URL
 - `getTypes(): string[] | undefined` - Get element types in the infographic
-- `update(options: string | Partial<InfographicOptions>): void` - Update infographic with new options
+- `update(options: DSLInput): Promise<void>` - Update infographic with new DSL
 - `destroy(): void` - Cleanup resources
 
 #### Example
@@ -43,11 +44,6 @@ import { Infographic } from 'infographic-for-react';
 function App() {
   const ref = useRef(null);
 
-  const dsl = JSON.stringify({
-    design: { /* ... */ },
-    data: { /* ... */ }
-  });
-
   const handleExport = async () => {
     const dataURL = await ref.current?.toDataURL({ type: 'svg' });
     // ...
@@ -56,7 +52,14 @@ function App() {
   return (
     <Infographic
       ref={ref}
-      dsl={dsl}
+      dsl={{
+        data: {
+          title: 'My Infographic',
+          items: [
+            { label: 'Item 1', value: 100 },
+          ],
+        },
+      }}
       width={800}
       height={600}
       onRender={(result) => console.log('Rendered:', result)}
@@ -113,7 +116,7 @@ An object with methods:
 
 - `toDataURL(options?: ExportOptions): Promise<string>`
 - `getTypes(): string[] | undefined`
-- `update(options: string | Partial<InfographicOptions>): void`
+- `update(options: Partial<InfographicOptions>): void`
 - `destroy(): void`
 
 #### Example
@@ -126,7 +129,14 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const infographic = useInfographic(containerRef, {
-    dsl: '...',
+    dsl: {
+      data: {
+        title: 'My Infographic',
+        items: [
+          { label: 'Item 1', value: 100 },
+        ],
+      },
+    },
     onRender: (result) => console.log('Rendered'),
   });
 
@@ -158,8 +168,8 @@ Lower-level hook for direct renderer management.
 
 An object with methods:
 
-- `render(options: string | Partial<InfographicOptions>): void`
-- `update(options: string | Partial<InfographicOptions>): void`
+- `render(options?: Partial<InfographicOptions>): void`
+- `update(options: Partial<InfographicOptions>): void`
 - `toDataURL(options?: ExportOptions): Promise<string>`
 - `getTypes(): string[] | undefined`
 - `destroy(): void`
@@ -171,37 +181,41 @@ An object with methods:
 
 ## Utility Functions
 
-### `applyOverrides(dsl: string, overrides: DSLOverride[]): string`
+### `applyOverrides(dsl: DSLObject, overrides: DSLOverride[]): DSLObject`
 
-Apply path-value overrides to a DSL string.
+Apply path-value overrides to a DSL object.
 
 #### Example
 
 ```tsx
 import { applyOverrides } from 'infographic-for-react';
 
-const dsl = JSON.stringify({ design: { title: { text: 'Old' } } });
+const dsl = {
+  data: {
+    title: { text: 'Old' }
+  }
+};
 const overrides = [
-  { path: 'design.title.text', value: 'New Title' }
+  { path: 'data.title.text', value: 'New Title' }
 ];
 
 const updated = applyOverrides(dsl, overrides);
-// => { design: { title: { text: 'New Title' } } }
+// => { data: { title: { text: 'New Title' } } }
 ```
 
 ---
 
-### `mergeDSL(dsl1: string, dsl2: string): string`
+### `mergeDSL(dsl1: DSLObject, dsl2: DSLObject): DSLObject`
 
-Deep merge two DSL strings.
+Deep merge two DSL objects.
 
 #### Example
 
 ```tsx
 import { mergeDSL } from 'infographic-for-react';
 
-const dsl1 = JSON.stringify({ a: 1, b: { x: 10 } });
-const dsl2 = JSON.stringify({ b: { y: 20 }, c: 3 });
+const dsl1 = { a: 1, b: { x: 10 } };
+const dsl2 = { b: { y: 20 }, c: 3 };
 
 const merged = mergeDSL(dsl1, dsl2);
 // => { a: 1, b: { x: 10, y: 20 }, c: 3 }
@@ -209,13 +223,13 @@ const merged = mergeDSL(dsl1, dsl2);
 
 ---
 
-### `composeTemplates(options: ComposeTemplateOptions): string`
+### `composeTemplates(options: ComposeTemplateOptions): DSLObject`
 
-Compose multiple templates into a single DSL.
+Compose multiple templates into a single DSL object.
 
 #### Parameters
 
-- `templates: string[]` - Array of DSL strings to compose
+- `templates: DSLObject[]` - Array of DSL objects to compose
 - `overrides?: DSLOverride[]` - Optional overrides to apply
 
 #### Example
@@ -223,9 +237,9 @@ Compose multiple templates into a single DSL.
 ```tsx
 import { composeTemplates } from 'infographic-for-react';
 
-const headerDSL = JSON.stringify({ /* header config */ });
-const bodyDSL = JSON.stringify({ /* body config */ });
-const footerDSL = JSON.stringify({ /* footer config */ });
+const headerDSL = { /* header config */ };
+const bodyDSL = { /* body config */ };
+const footerDSL = { /* footer config */ };
 
 const composed = composeTemplates({
   templates: [headerDSL, bodyDSL, footerDSL],
@@ -269,7 +283,7 @@ interface InfographicRenderResult {
 ### `PreRenderHook`
 
 ```ts
-type PreRenderHook = (dsl: string) => string | Promise<string>;
+type PreRenderHook = (dsl: DSLObject) => DSLObject | Promise<DSLObject>;
 ```
 
 ### `PostRenderHook`

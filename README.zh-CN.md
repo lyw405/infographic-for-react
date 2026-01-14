@@ -2,14 +2,14 @@
 
 > React 组件库 for @antv/infographic - 基于组件化的声明式信息图表生成封装。
 
+[English documentation](./README.md)
+
 [![npm version](https://img.shields.io/npm/v/infographic-for-react.svg)](https://www.npmjs.com/package/infographic-for-react)
-[![license](https://img.shields.io/npm/l/infographic-for-react.svg)](https://github.com/lyw405/infographic-for-react/blob/main/LICENSE)
 
 ## 特性
 
 - **🎯 声明式 API** - 使用熟悉的 React 组件模式渲染信息图表
 - **⚡ 轻量级** - 核心信息图表引擎的轻量级封装，开销最小
-- **🔌 灵活输入** - 支持原始 DSL 字符串、内置模板或模板名称
 - **🔧 可定制** - 基于路径的 API 覆盖 DSL 值，应用主题和调色板
 - **🪝 可扩展** - `beforeRender` / `afterRender` 钩子用于自定义预处理/后处理
 - **📦 导出就绪** - 内置导出为 SVG/PNG 数据 URL
@@ -19,43 +19,17 @@
 ## 安装
 
 ```bash
+# 安装 infographic-for-react 及其 peer dependency @antv/infographic
 npm install infographic-for-react @antv/infographic
 ```
+
+> **注意**：`@antv/infographic` 是 peer dependency，需要单独安装。如果你使用 npm v7+，它会自动安装，但我们建议显式安装以确保兼容性。
 
 ## 快速开始
 
 ### 基础用法
 
-```tsx
-import { Infographic } from 'infographic-for-react';
-
-function App() {
-  const dsl = JSON.stringify({
-    design: {
-      title: {
-        component: 'Title',
-        props: { text: '我的信息图表' },
-      },
-      items: [
-        {
-          name: 'SimpleItem',
-          component: 'SimpleItem',
-          props: { label: '项目 1', value: 100 },
-        },
-      ],
-      structure: {
-        component: 'Flex',
-        props: { direction: 'column' },
-      },
-    },
-    data: {},
-  });
-
-  return <Infographic dsl={dsl} width={600} height={400} />;
-}
-```
-
-### 使用模板
+使用 `Infographic` 最简单的方式是传入包含模板名称和数据配置的 `dsl` 属性。
 
 ```tsx
 import { Infographic } from 'infographic-for-react';
@@ -63,10 +37,31 @@ import { Infographic } from 'infographic-for-react';
 function App() {
   return (
     <Infographic
-      template="list-zigzag"
-      width={800}
-      height={600}
-      theme="modern"
+      dsl={{
+        template: '模板名称',
+        theme: 'light',
+        palette: 'antv',
+        data: {
+          title: '我的信息图表',
+          desc: '可选描述',
+          items: [
+            {
+              label: '项目 1',
+              value: 100,
+              desc: '项目描述',
+              icon: 'mingcute/diamond-2-fill',
+              illus: 'creative-experiment',
+              time: '2021',
+              children: [
+                ...
+              ],
+            },
+            { label: '项目 2', value: 200 },
+          ],
+        },
+      }}
+      width={600}
+      height={400}
     />
   );
 }
@@ -74,18 +69,46 @@ function App() {
 
 ### DSL 覆盖
 
+使用 `overrides` 属性可以通过路径选择性地修改 DSL 值，而无需重新创建整个 DSL 对象。这对于动态更新或主题切换非常有用。
+
 ```tsx
 import { Infographic } from 'infographic-for-react';
 
 function App() {
-  const dsl = JSON.stringify({ /* 基础 DSL */ });
-
   const overrides = [
-    { path: 'design.title.props.text', value: '自定义标题' },
-    { path: 'design.items[0].props.value', value: 200 },
+    { path: 'data.items[0].value', value: 200 },
   ];
 
-  return <Infographic dsl={dsl} overrides={overrides} />;
+  return (
+    <Infographic
+      dsl={{
+        template: '模板名称',
+        theme: 'light',
+        palette: 'antv',
+        data: {
+          title: '我的信息图表',
+          desc: '可选描述',
+          items: [
+            {
+              label: '项目 1',
+              value: 100,
+              desc: '项目描述',
+              icon: 'mingcute/diamond-2-fill',
+              illus: 'creative-experiment',
+              time: '2021',
+              children: [
+                ...,
+              ],
+            },
+            { label: '项目 2', value: 200 },
+          ],
+        },
+      }}
+      overrides={overrides}
+      width={600}
+      height={400}
+    />
+  );
 }
 ```
 
@@ -99,7 +122,14 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const infographic = useInfographic(containerRef, {
-    dsl: '...',
+    dsl: {
+      data: {
+        title: '我的信息图表',
+        items: [
+          { label: '项目 1', value: 100 },
+        ],
+      },
+    },
     onRender: (result) => console.log('已渲染:', result),
   });
 
@@ -122,14 +152,18 @@ function App() {
 
 ### 渲染前/后钩子
 
+使用 `beforeRender` 在渲染前预处理 DSL，使用 `afterRender` 在信息图表渲染后执行操作（如日志记录、分析、自定义后处理）。
+
 ```tsx
 import { Infographic } from 'infographic-for-react';
+import type { DSLObject } from 'infographic-for-react';
 
 function App() {
-  const beforeRender = (dsl: string) => {
-    const parsed = JSON.parse(dsl);
-    parsed.design.title.props.text = '已处理: ' + parsed.design.title.props.text;
-    return JSON.stringify(parsed);
+  const beforeRender = (dsl: DSLObject): DSLObject => {
+    return {
+      ...dsl,
+      title: '已处理: ' + dsl.title,
+    };
   };
 
   const afterRender = async (result) => {
@@ -139,7 +173,13 @@ function App() {
 
   return (
     <Infographic
-      dsl={dsl}
+      dsl={{
+        title: '我的信息图表',
+        data: {
+          title: '数据标题',
+          items: [{ label: '项目 1', value: 100 }],
+        },
+      }}
       beforeRender={beforeRender}
       afterRender={afterRender}
     />
@@ -149,14 +189,9 @@ function App() {
 
 ## API 参考
 
-详细 API 文档请参阅 [API.md](./docs/API.md)。
+详细 API 文档请参阅 [API.zh-CN.md](./docs/API.zh-CN.md)。
 
-## 示例
-
-- [基础用法](./examples/basic.tsx)
-- [模板示例](./examples/template.tsx)
-- [DSL 覆盖](./examples/overrides.tsx)
-- [Hooks 用法](./examples/hooks.tsx)
+[English documentation](./docs/API.md) is also available.
 
 ## 开发
 

@@ -2,14 +2,14 @@
 
 > React components for @antv/infographic - a declarative, component-based wrapper for infographic generation.
 
+[中文文档](./README.zh-CN.md)
+
 [![npm version](https://img.shields.io/npm/v/infographic-for-react.svg)](https://www.npmjs.com/package/infographic-for-react)
-[![license](https://img.shields.io/npm/l/infographic-for-react.svg)](https://github.com/lyw405/infographic-for-react/blob/main/LICENSE)
 
 ## Features
 
 - **🎯 Declarative API** - Use React components to render infographics with familiar patterns
 - **⚡ Lightweight** - Thin wrapper around the core infographic engine with minimal overhead
-- **🔌 Flexible Input** - Support for raw DSL strings, built-in templates, or template names
 - **🔧 Customizable** - Override DSL values with path-based API, apply themes and palettes
 - **🪝 Extensible** - `beforeRender` / `afterRender` hooks for custom preprocessing/postprocessing
 - **📦 Export Ready** - Built-in export to SVG/PNG data URLs
@@ -19,43 +19,17 @@
 ## Installation
 
 ```bash
+# Install infographic-for-react and its peer dependency @antv/infographic
 npm install infographic-for-react @antv/infographic
 ```
+
+> **Note**: `@antv/infographic` is a peer dependency and must be installed separately. If you use npm v7+, it will be installed automatically, but we recommend explicitly installing it to ensure compatibility.
 
 ## Quick Start
 
 ### Basic Usage
 
-```tsx
-import { Infographic } from 'infographic-for-react';
-
-function App() {
-  const dsl = JSON.stringify({
-    design: {
-      title: {
-        component: 'Title',
-        props: { text: 'My Infographic' },
-      },
-      items: [
-        {
-          name: 'SimpleItem',
-          component: 'SimpleItem',
-          props: { label: 'Item 1', value: 100 },
-        },
-      ],
-      structure: {
-        component: 'Flex',
-        props: { direction: 'column' },
-      },
-    },
-    data: {},
-  });
-
-  return <Infographic dsl={dsl} width={600} height={400} />;
-}
-```
-
-### Using Templates
+The simplest way to use `Infographic` is to pass a `dsl` prop with the template name and data configuration.
 
 ```tsx
 import { Infographic } from 'infographic-for-react';
@@ -63,10 +37,31 @@ import { Infographic } from 'infographic-for-react';
 function App() {
   return (
     <Infographic
-      template="list-zigzag"
-      width={800}
-      height={600}
-      theme="modern"
+      dsl={{
+        template: 'template-name',
+        theme: 'light',
+        palette: 'antv',
+        data: {
+          title: 'My Infographic',
+          desc: 'Optional description',
+          items: [
+            {
+              label: 'Item 1',
+              value: 100,
+              desc: 'Item description',
+              icon: 'mingcute/diamond-2-fill',
+              illus: 'creative-experiment',
+              time: '2021',
+              children: [
+                ...,
+              ],
+            },
+            ...,
+          ],
+        },
+      }}
+      width={600}
+      height={400}
     />
   );
 }
@@ -74,18 +69,46 @@ function App() {
 
 ### DSL Overrides
 
+Use the `overrides` prop to selectively modify DSL values by path without recreating the entire DSL object. This is useful for dynamic updates or theming.
+
 ```tsx
 import { Infographic } from 'infographic-for-react';
 
 function App() {
-  const dsl = JSON.stringify({ /* base DSL */ });
-
   const overrides = [
-    { path: 'design.title.props.text', value: 'Custom Title' },
-    { path: 'design.items[0].props.value', value: 200 },
+    { path: 'data.items[0].value', value: 200 },
   ];
 
-  return <Infographic dsl={dsl} overrides={overrides} />;
+  return (
+    <Infographic
+      dsl={{
+        template: 'template-name',
+        theme: 'light',
+        palette: 'antv',
+        data: {
+          title: 'My Infographic',
+          desc: 'Optional description',
+          items: [
+            {
+              label: 'Item 1',
+              value: 100,
+              desc: 'Item description',
+              icon: 'mingcute/diamond-2-fill',
+              illus: 'creative-experiment',
+              time: '2021',
+              children: [
+                ...,
+              ],
+            },
+            { label: 'Item 2', value: 200 },
+          ],
+        },
+      }}
+      overrides={overrides}
+      width={600}
+      height={400}
+    />
+  );
 }
 ```
 
@@ -99,7 +122,14 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const infographic = useInfographic(containerRef, {
-    dsl: '...',
+    dsl: {
+      data: {
+        title: 'My Infographic',
+        items: [
+          { label: 'Item 1', value: 100 },
+        ],
+      },
+    },
     onRender: (result) => console.log('Rendered:', result),
   });
 
@@ -122,14 +152,18 @@ function App() {
 
 ### Pre/Post Render Hooks
 
+Use `beforeRender` to preprocess the DSL before rendering, and `afterRender` to perform actions after the infographic is rendered (e.g., logging, analytics, custom post-processing).
+
 ```tsx
 import { Infographic } from 'infographic-for-react';
+import type { DSLObject } from 'infographic-for-react';
 
 function App() {
-  const beforeRender = (dsl: string) => {
-    const parsed = JSON.parse(dsl);
-    parsed.design.title.props.text = 'Processed: ' + parsed.design.title.props.text;
-    return JSON.stringify(parsed);
+  const beforeRender = (dsl: DSLObject): DSLObject => {
+    return {
+      ...dsl,
+      title: 'Processed: ' + dsl.title,
+    };
   };
 
   const afterRender = async (result) => {
@@ -139,7 +173,12 @@ function App() {
 
   return (
     <Infographic
-      dsl={dsl}
+      dsl={{
+        data: {
+          title: 'My Infographic',
+          items: [{ label: 'Item 1', value: 100 }],
+        },
+      }}
       beforeRender={beforeRender}
       afterRender={afterRender}
     />
@@ -151,12 +190,7 @@ function App() {
 
 See [API.md](./docs/API.md) for detailed API documentation.
 
-## Examples
-
-- [Basic Usage](./examples/basic.tsx)
-- [Template Example](./examples/template.tsx)
-- [DSL Overrides](./examples/overrides.tsx)
-- [Hooks Usage](./examples/hooks.tsx)
+[中文文档](./docs/API.zh-CN.md) is also available.
 
 ## Development
 

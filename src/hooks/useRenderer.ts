@@ -11,8 +11,7 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
   const pendingListenersRef = useRef<Map<string, Set<(...args: any[]) => void>>>(new Map());
 
   const createRenderer = useCallback(
-    async (options: string | Partial<InfographicOptions>): Promise<RendererInstance> => {
-      // @ts-ignore - Dynamic import of @antv/infographic
+    async (options: Partial<InfographicOptions>): Promise<RendererInstance> => {
       const { Infographic: InfographicClass } = await import('@antv/infographic');
       const renderer = new InfographicClass(options);
 
@@ -38,16 +37,13 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
   );
 
   const render = useCallback(
-    async (options: string | Partial<InfographicOptions>) => {
+    async (options: Partial<InfographicOptions>) => {
       const container = containerRef.current;
       if (!container) {
         throw new Error('Container element not found');
       }
 
-      const renderOptions =
-        typeof options === 'string'
-          ? { container }
-          : { ...options, container };
+      const renderOptions = { ...options, container };
 
       if (rendererRef.current) {
         rendererRef.current.update(renderOptions);
@@ -59,7 +55,7 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
     [containerRef, createRenderer],
   );
 
-  const update = useCallback((options: string | Partial<InfographicOptions>) => {
+  const update = useCallback((options: Partial<InfographicOptions>) => {
     if (!rendererRef.current) {
       throw new Error('Renderer not initialized. Call render first.');
     }

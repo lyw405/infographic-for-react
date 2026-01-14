@@ -1,4 +1,4 @@
-import type { DSLOverride } from '../../types';
+import type { DSLOverride, DSLObject } from '../../types';
 
 function setByPath(obj: Record<string, unknown>, path: string, value: unknown): void {
   const keys = path.split('.');
@@ -19,31 +19,21 @@ function setByPath(obj: Record<string, unknown>, path: string, value: unknown): 
   }
 }
 
-export function applyOverrides(base: string, overrides: DSLOverride[]): string {
+export function applyOverrides(base: DSLObject, overrides: DSLOverride[]): DSLObject {
   if (overrides.length === 0) return base;
 
-  let parsed: Record<string, unknown>;
-
-  try {
-    parsed = JSON.parse(base);
-  } catch (error) {
-    throw new Error(`Failed to parse DSL: ${error instanceof Error ? error.message : String(error)}`);
-  }
+  const result = { ...base };
 
   for (const override of overrides) {
-    setByPath(parsed, override.path, override.value);
+    setByPath(result as Record<string, unknown>, override.path, override.value);
   }
 
-  return JSON.stringify(parsed);
+  return result;
 }
 
-export function mergeDSL(dsl1: string, dsl2: string): string {
-  const obj1 = JSON.parse(dsl1);
-  const obj2 = JSON.parse(dsl2);
-
-  const merged = deepMerge(obj1, obj2);
-
-  return JSON.stringify(merged);
+export function mergeDSL(dsl1: DSLObject, dsl2: DSLObject): DSLObject {
+  const merged = deepMerge(dsl1 as unknown as Record<string, unknown>, dsl2 as unknown as Record<string, unknown>);
+  return merged as unknown as DSLObject;
 }
 
 function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {

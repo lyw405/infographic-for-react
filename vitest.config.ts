@@ -17,8 +17,5 @@ export default defineConfig({
       ],
     },
     setupFiles: ['./__tests__/setup.ts'],
-    alias: {
-      '@antv/infographic': '../../../Infographic/src/index.ts',
-    },
   },
 });

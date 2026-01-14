@@ -8,6 +8,9 @@ import type {
   InfographicError,
   InfographicRenderResult,
   DSLInput,
+  DSLObject,
+  ThemeConfig,
+  InfographicOptions,
 } from '../types';
 
 export function useInfographic(
@@ -22,26 +25,18 @@ export function useInfographic(
   propsRef.current = props;
 
   const resolveDSL = useCallback(
-    async (input: DSLInput | undefined): Promise<string> => {
+    async (input: DSLInput | undefined): Promise<DSLObject> => {
       if (!input) {
-        throw new Error('DSL or template is required');
+        throw new Error('DSL is required');
       }
-
-      if (typeof input === 'string') {
-        if (input.trim().startsWith('{') || input.trim().startsWith('[')) {
-          return input;
-        }
-        return input;
-      }
-
-      return JSON.stringify(input);
+      return input;
     },
     [],
   );
 
   const processDSL = useCallback(
-    async (input: string): Promise<string> => {
-      let processed = input;
+    async (input: DSLObject): Promise<DSLObject> => {
+      let processed: DSLObject = input;
       const { overrides, beforeRender } = propsRef.current;
 
       if (overrides && overrides.length > 0) {
@@ -51,7 +46,7 @@ export function useInfographic(
           const infographicError: InfographicError = {
             type: 'syntax',
             message: `Failed to apply overrides: ${error instanceof Error ? error.message : String(error)}`,
-            dsl: processed,
+            dsl: JSON.stringify(processed),
             details: error,
           };
           propsRef.current.onError?.(infographicError);
@@ -66,7 +61,7 @@ export function useInfographic(
           const infographicError: InfographicError = {
             type: 'runtime',
             message: `beforeRender hook failed: ${error instanceof Error ? error.message : String(error)}`,
-            dsl: processed,
+            dsl: JSON.stringify(processed),
             details: error,
           };
           propsRef.current.onError?.(infographicError);
@@ -90,7 +85,6 @@ export function useInfographic(
           const infographicError: InfographicError = {
             type: 'runtime',
             message: `afterRender hook failed: ${error instanceof Error ? error.message : String(error)}`,
-            dsl: JSON.stringify(result.options),
             details: error,
           };
           propsRef.current.onError?.(infographicError);
@@ -106,35 +100,43 @@ export function useInfographic(
   const render = useCallback(async () => {
     const {
       dsl,
-      template,
       width,
       height,
       theme,
-      palette,
       editable,
       className,
     } = propsRef.current;
 
-    const input = dsl || template;
-
     try {
-      let processedDSL: string;
+      let processedDSL: DSLObject;
 
-      if (!input) {
-        throw new Error('Either dsl or template prop is required');
+      if (!dsl) {
+        throw new Error('DSL prop is required');
       }
 
-      processedDSL = await resolveDSL(input);
+      processedDSL = await resolveDSL(dsl);
       processedDSL = await processDSL(processedDSL);
 
-      if (dslCacheRef.current !== processedDSL) {
-        dslCacheRef.current = processedDSL;
+      const dslString = JSON.stringify(processedDSL);
+      if (dslCacheRef.current !== dslString) {
+        dslCacheRef.current = dslString;
 
-        const renderOptions: Record<string, unknown> = { ...JSON.parse(processedDSL) };
+        const renderOptions: Partial<InfographicOptions> = { ...processedDSL };
 
-        if (theme) renderOptions.theme = theme;
-        if (palette) renderOptions.palette = palette;
+        if (processedDSL.theme) renderOptions.theme = processedDSL.theme;
+        else if (theme) renderOptions.theme = theme;
+
+        if (processedDSL.palette) {
+          const existingThemeConfig = (processedDSL.themeConfig || {}) as ThemeConfig;
+          renderOptions.themeConfig = {
+            ...existingThemeConfig,
+            palette: processedDSL.palette,
+          };
+        }
+
         if (editable !== undefined) renderOptions.editable = editable;
+
+        delete (renderOptions as any).palette;
 
         if (width || height) {
           renderOptions.width = width;
@@ -183,9 +185,18 @@ export function useInfographic(
 
   const refUpdate = useCallback(
     async (options: DSLInput) => {
-      const input = typeof options === 'string' ? options : JSON.stringify(options);
-      const processed = await processDSL(input);
-      const renderOptions = { ...JSON.parse(processed) };
+      const processed = await processDSL(options);
+      const themeConfig = (processed.themeConfig || {}) as ThemeConfig;
+      if (processed.palette) {
+        themeConfig.palette = processed.palette;
+      }
+
+      const { palette: _, ...rest } = processed as any;
+      const renderOptions: Partial<InfographicOptions> = {
+        ...rest,
+        theme: processed.theme ?? propsRef.current.theme,
+        themeConfig,
+      };
       update(renderOptions);
     },
     [update, processDSL],

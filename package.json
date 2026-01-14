@@ -13,8 +13,13 @@
     "type": "git",
     "url": "git+https://github.com/lyw405/infographic-for-react.git"
   },
+  "bugs": {
+    "url": "https://github.com/lyw405/infographic-for-react/issues"
+  },
+  "homepage": "https://github.com/lyw405/infographic-for-react#readme",
   "license": "MIT",
   "author": "AntV",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -28,7 +33,9 @@
   },
   "files": [
     "dist",
-    "src"
+    "package.json",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsup",

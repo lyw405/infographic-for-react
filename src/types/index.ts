@@ -14,6 +14,7 @@ export interface DSLItem {
   icon?: string;
   illus?: string;
   value?: number;
+  time?: string;
   children?: DSLItem[];
 }
 
@@ -30,14 +31,18 @@ export interface DSLTheme {
 
 export interface DSLObject extends Partial<InfographicOptions> {
   data: DSLData;
+  palette?: Palette;
+  themeConfig?: ThemeConfig;
 }
 
-export type DSLInput = string | DSLObject;
+export type DSLInput = DSLObject;
 
 export interface DSLOverride {
   path: string;
   value: unknown;
 }
+
+export type PreRenderHook = (dsl: DSLObject) => DSLObject | Promise<DSLObject>;
 
 export interface InfographicRenderResult {
   node: SVGSVGElement;
@@ -51,15 +56,17 @@ export interface InfographicError {
   details?: string | Error | unknown;
 }
 
-export type PreRenderHook = (dsl: string) => string | Promise<string>;
-
 export type PostRenderHook = (result: InfographicRenderResult) => void | Promise<void>;
+
+export interface ComposeTemplateOptions {
+  templates: DSLObject[];
+  overrides?: DSLOverride[];
+}
 
 export interface InfographicProps {
   dsl?: DSLInput;
-  template?: string;
   overrides?: DSLOverride[];
-  theme?: ThemeConfig;
+  theme?: string;
   palette?: Palette;
   width?: number | string;
   height?: number | string;
@@ -80,16 +87,11 @@ export interface InfographicRef {
 }
 
 export interface RendererInstance {
-  render: (options?: string | Partial<InfographicOptions>) => void;
-  update: (options: string | Partial<InfographicOptions>) => void;
+  render: (options?: Partial<InfographicOptions>) => void;
+  update: (options: Partial<InfographicOptions>) => void;
   toDataURL: (options?: ExportOptions) => Promise<string>;
   getTypes: () => string | undefined;
   destroy: () => void;
   on: (event: string, listener: (...args: any[]) => void) => void;
   off: (event: string, listener: (...args: any[]) => void) => void;
-}
-
-export interface ComposeTemplateOptions {
-  templates: string[];
-  overrides?: DSLOverride[];
 }

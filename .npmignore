@@ -1,0 +1,11 @@
+__tests__/
+*.test.ts
+*.test.tsx
+docs/
+examples/
+.gitignore
+.eslintrc.cjs
+.prettierrc
+tsconfig.json
+tsup.config.ts
+vitest.config.ts

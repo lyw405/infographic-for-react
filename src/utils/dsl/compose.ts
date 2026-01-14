@@ -1,4 +1,4 @@
-import type { ComposeTemplateOptions } from '../../types';
+import type { ComposeTemplateOptions, DSLObject } from '../../types';
 import { applyOverrides } from './merge';
 
 interface DSLNode {
@@ -9,28 +9,16 @@ interface DSLNode {
   [key: string]: unknown;
 }
 
-function parseDSL(dsl: string): DSLNode {
-  try {
-    return JSON.parse(dsl);
-  } catch (error) {
-    throw new Error(`Failed to parse DSL: ${error instanceof Error ? error.message : String(error)}`);
-  }
-}
-
-function stringifyDSL(node: DSLNode): string {
-  return JSON.stringify(node);
-}
-
-function isContainerNode(node: DSLNode): boolean {
+function isContainerNode(node: unknown): node is DSLNode {
   return (
     typeof node === 'object' &&
     node !== null &&
     'children' in node &&
-    Array.isArray(node.children)
+    Array.isArray((node as DSLNode).children)
   );
 }
 
-export function composeTemplates(options: ComposeTemplateOptions): string {
+export function composeTemplates(options: ComposeTemplateOptions): DSLObject {
   const { templates, overrides = [] } = options;
 
   if (templates.length === 0) {
@@ -45,9 +33,7 @@ export function composeTemplates(options: ComposeTemplateOptions): string {
     return base;
   }
 
-  const parsedTemplates = templates.map(parseDSL);
-
-  const root = parsedTemplates[0];
+  const root = templates[0] as DSLNode;
 
   if (!isContainerNode(root)) {
     throw new Error('Root template must be a container node with children');
@@ -55,8 +41,8 @@ export function composeTemplates(options: ComposeTemplateOptions): string {
 
   let currentChildren = root.children || [];
 
-  for (let i = 1; i < parsedTemplates.length; i++) {
-    const template = parsedTemplates[i];
+  for (let i = 1; i < templates.length; i++) {
+    const template = templates[i] as DSLNode;
 
     if (isContainerNode(template) && template.children) {
       currentChildren = [...currentChildren, ...template.children];
@@ -67,7 +53,7 @@ export function composeTemplates(options: ComposeTemplateOptions): string {
 
   root.children = currentChildren;
 
-  let composed = stringifyDSL(root);
+  let composed = root as DSLObject;
 
   if (overrides.length > 0) {
     composed = applyOverrides(composed, overrides);
