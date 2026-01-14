@@ -1,23 +1,5 @@
 import type { DSLOverride, DSLObject } from '../../types';
-
-function setByPath(obj: Record<string, unknown>, path: string, value: unknown): void {
-  const keys = path.split('.');
-  let current = obj;
-
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    const isLast = i === keys.length - 1;
-
-    if (isLast) {
-      current[key] = value;
-    } else {
-      if (typeof current[key] !== 'object' || current[key] === null) {
-        current[key] = {};
-      }
-      current = current[key] as Record<string, unknown>;
-    }
-  }
-}
+import { setByPath } from '../path';
 
 export function applyOverrides(base: DSLObject, overrides: DSLOverride[]): DSLObject {
   if (overrides.length === 0) return base;

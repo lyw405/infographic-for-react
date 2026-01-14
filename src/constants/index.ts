@@ -1,0 +1,1 @@
+export const RENDER_DEBOUNCE_DELAY = 100;

@@ -1,9 +1,15 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useInfographic } from '../hooks';
 import type { InfographicProps, InfographicRef, InfographicError } from '../types';
+import {
+  errorOverlayStyles,
+  errorTitleStyles,
+  errorMessageStyles,
+  retryButtonStyles,
+} from './styles';
 
-const defaultError = {
-  type: 'render' as const,
+const defaultError: InfographicError = {
+  type: 'render',
   message: 'An error occurred while rendering the infographic.',
 };
 
@@ -46,43 +52,10 @@ function InfographicComponent(
         data-infographic-container
       />
       {error && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.05)',
-            color: '#d32f2f',
-            padding: '20px',
-            zIndex: 1,
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ fontSize: '1.2em', fontWeight: 'bold', marginBottom: '10px' }}>
-            Infographic Render Error
-          </div>
-          <div style={{ marginBottom: '15px' }}>
-            {error.message || defaultError.message}
-          </div>
-          <button
-            type="button"
-            onClick={handleRetry}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#1976d2',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-            }}
-          >
+        <div style={errorOverlayStyles}>
+          <div style={errorTitleStyles}>Infographic Render Error</div>
+          <div style={errorMessageStyles}>{error.message || defaultError.message}</div>
+          <button type="button" onClick={handleRetry} style={retryButtonStyles}>
             Retry
           </button>
         </div>

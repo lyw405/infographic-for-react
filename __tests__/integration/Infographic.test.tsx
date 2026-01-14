@@ -37,26 +37,32 @@ describe('Infographic Component', () => {
   });
 
   it('should render container element', () => {
-    const { container } = render(<Infographic dsl='{"test":"value"}' />);
+    const { container } = render(
+      <Infographic dsl={{ data: { title: 'Test', items: [] } }} />,
+    );
     const divElement = container.querySelector('[data-infographic-container]');
     expect(divElement).toBeInTheDocument();
   });
 
   it('should apply custom className', () => {
-    const { container } = render(<Infographic dsl='{"test":"value"}' className="custom-class" />);
+    const { container } = render(
+      <Infographic dsl={{ data: { title: 'Test', items: [] } }} className="custom-class" />,
+    );
     const divElement = container.querySelector('[data-infographic-container]');
     expect(divElement).toHaveClass('custom-class');
   });
 
   it('should apply custom width and height', () => {
-    const { container } = render(<Infographic dsl='{"test":"value"}' width={800} height={600} />);
+    const { container } = render(
+      <Infographic dsl={{ data: { title: 'Test', items: [] } }} width={800} height={600} />,
+    );
     const divElement = container.querySelector('[data-infographic-container]');
     expect(divElement).toHaveStyle({ width: '800px', height: '600px' });
   });
 
   it('should expose ref methods', () => {
     const ref: any = { current: null };
-    render(<Infographic dsl='{"test":"value"}' ref={ref} />);
+    render(<Infographic dsl={{ data: { title: 'Test', items: [] } }} ref={ref} />);
 
     expect(ref.current).toBeDefined();
     expect(typeof ref.current.toDataURL).toBe('function');

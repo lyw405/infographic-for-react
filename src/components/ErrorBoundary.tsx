@@ -1,4 +1,10 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import {
+  errorBoundaryContainerStyles,
+  errorBoundaryTitleStyles,
+  errorBoundaryStackStyles,
+  errorBoundaryRetryButtonStyles,
+} from './styles';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -50,46 +56,16 @@ export class ErrorBoundary extends Component<
     }
 
     return (
-      <div
-        style={{
-          padding: '20px',
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
-          borderRadius: '4px',
-          color: '#c33',
-        }}
-      >
-        <h2 style={{ marginTop: 0 }}>Something went wrong</h2>
+      <div style={errorBoundaryContainerStyles}>
+        <h2 style={errorBoundaryTitleStyles}>Something went wrong</h2>
         <p>{error.message}</p>
         {errorInfo && (
           <details style={{ marginTop: '10px' }}>
             <summary>Stack trace</summary>
-            <pre
-              style={{
-                marginTop: '10px',
-                padding: '10px',
-                backgroundColor: 'white',
-                borderRadius: '4px',
-                overflow: 'auto',
-              }}
-            >
-              {errorInfo.componentStack}
-            </pre>
+            <pre style={errorBoundaryStackStyles}>{errorInfo.componentStack}</pre>
           </details>
         )}
-        <button
-          type="button"
-          onClick={this.handleReset}
-          style={{
-            marginTop: '15px',
-            padding: '8px 16px',
-            backgroundColor: '#c33',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
+        <button type="button" onClick={this.handleReset} style={errorBoundaryRetryButtonStyles}>
           Try again
         </button>
       </div>

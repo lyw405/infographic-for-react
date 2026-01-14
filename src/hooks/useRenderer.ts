@@ -9,6 +9,7 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
   const rendererRef = useRef<RendererInstance | null>(null);
   const isInitializedRef = useRef(false);
   const pendingListenersRef = useRef<Map<string, Set<(...args: any[]) => void>>>(new Map());
+  const attachedListenersRef = useRef<Map<string, Set<(...args: any[]) => void>>>(new Map());
 
   const createRenderer = useCallback(
     async (options: Partial<InfographicOptions>): Promise<RendererInstance> => {
@@ -31,6 +32,8 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
         console.error('[Infographic-for-React] Renderer error:', error);
       });
 
+      renderer.render();
+
       return renderer;
     },
     [],
@@ -48,8 +51,7 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
       if (rendererRef.current) {
         rendererRef.current.update(renderOptions);
       } else {
-        const renderer = await createRenderer(renderOptions);
-        renderer.render();
+        await createRenderer(renderOptions);
       }
     },
     [containerRef, createRenderer],
@@ -81,6 +83,13 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
 
   const destroy = useCallback(() => {
     if (rendererRef.current) {
+      attachedListenersRef.current.forEach((listeners, event) => {
+        listeners.forEach((listener) => {
+          rendererRef.current?.off(event, listener);
+        });
+      });
+      attachedListenersRef.current.clear();
+
       rendererRef.current.destroy();
       rendererRef.current = null;
     }
@@ -94,6 +103,9 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
       pendingListenersRef.current.set(event, listeners);
       return;
     }
+    const listeners = attachedListenersRef.current.get(event) || new Set();
+    listeners.add(listener);
+    attachedListenersRef.current.set(event, listeners);
     rendererRef.current.on(event, listener);
   }, []);
 
@@ -109,6 +121,13 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
       return;
     }
     rendererRef.current.off(event, listener);
+    const listeners = attachedListenersRef.current.get(event);
+    if (listeners) {
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        attachedListenersRef.current.delete(event);
+      }
+    }
   }, []);
 
   useEffect(() => {

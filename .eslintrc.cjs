@@ -1,7 +1,11 @@
 module.exports = {
-  extends: ['eslint:recommended', 'prettier'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
+  ],
   parser: '@typescript-eslint/parser',
-  plugins: ['react', 'react-hooks'],
+  plugins: ['react', 'react-hooks', '@typescript-eslint'],
   env: {
     browser: true,
     es2020: true,
