@@ -1,6 +1,6 @@
 {
   "name": "infographic-for-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React components for @antv/infographic - a declarative, component-based wrapper for infographic generation",
   "keywords": [
     "antv",
