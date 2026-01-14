@@ -35,7 +35,7 @@ export interface DSLObject extends Partial<InfographicOptions> {
   themeConfig?: ThemeConfig;
 }
 
-export type DSLInput = DSLObject;
+export type DSLInput = string | DSLObject;
 
 export interface DSLOverride {
   path: string;
@@ -64,6 +64,7 @@ export interface ComposeTemplateOptions {
 }
 
 export interface InfographicProps {
+  children?: string;
   dsl?: DSLInput;
   overrides?: DSLOverride[];
   theme?: string;
@@ -87,8 +88,8 @@ export interface InfographicRef {
 }
 
 export interface RendererInstance {
-  render: (options?: Partial<InfographicOptions>) => void;
-  update: (options: Partial<InfographicOptions>) => void;
+  render: (options?: string | Partial<InfographicOptions>) => void;
+  update: (options: string | Partial<InfographicOptions>) => void;
   toDataURL: (options?: ExportOptions) => Promise<string>;
   getTypes: () => string | undefined;
   destroy: () => void;

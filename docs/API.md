@@ -12,19 +12,22 @@ Main component for rendering infographics.
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `dsl` | `DSLObject` | Yes | - | The DSL object to render. Supports optional `template`, `theme`, `palette`, `themeConfig` fields. |
-| `overrides` | `DSLOverride[]` | No | `[]` | Array of path-value pairs to override DSL values. |
+| `children` | `string` | Conditional* | - | **(Recommended)** The DSL string as component children. Takes precedence over `dsl` prop when provided. Must be a valid infographic DSL string. |
+| `dsl` | `string \\| DSLObject` | Conditional* | - | The DSL to render. Can be either a string (native infographic syntax) or an object (supports `template`, `theme`, `palette`, `themeConfig` fields). Ignored when `children` is provided. |
+| `overrides` | `DSLOverride[]` | No | `[]` | Array of path-value pairs to override DSL values. **Only applies when `dsl` is an object**. |
 | `theme` | `string` | No | - | Theme name. Falls back to `dsl.theme` if not provided. |
 | `palette` | `Palette` | No | - | Color palette. Falls back to `dsl.palette` if not provided (merged into `themeConfig.palette`). |
-| `width` | `number \| string` | No | `'100%'` | Container width. |
-| `height` | `number \| string` | No | `'auto'` | Container height. |
+| `width` | `number \\| string` | No | `'100%'` | Container width. |
+| `height` | `number \\| string` | No | `'auto'` | Container height. |
 | `className` | `string` | No | - | Additional CSS class name. |
 | `editable` | `boolean` | No | `false` | Enable interactive editing. |
-| `beforeRender` | `PreRenderHook` | No | - | Hook called before rendering to modify DSL. |
+| `beforeRender` | `PreRenderHook` | No | - | Hook called before rendering to modify DSL. **Only applies when `dsl` is an object**. |
 | `afterRender` | `PostRenderHook` | No | - | Hook called after rendering completes. |
 | `onRender` | `(result: InfographicRenderResult) => void` | No | - | Callback when rendering completes. |
 | `onError` | `(error: InfographicError) => void` | No | - | Callback when an error occurs. |
 | `onLoad` | `(result: InfographicRenderResult) => void` | No | - | Callback when all resources are loaded. |
+
+> *Either `children` or `dsl` prop must be provided. When both are provided, `children` takes precedence. Using `children` with a template literal is the recommended approach for most use cases.
 
 #### Ref
 
@@ -79,8 +82,8 @@ Error boundary component for catching React errors.
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `children` | `ReactNode` | Yes | - | Child components to wrap. |
-| `fallback` | `ReactNode \| ((error: Error, errorInfo: ErrorInfo) => ReactNode)` | No | - | Custom fallback UI. |
+| `children` | `string` | Yes | - | Child components to wrap. |
+| `fallback` | `string \| ((error: Error, errorInfo: ErrorInfo) => ReactNode)` | No | - | Custom fallback UI. |
 | `onError` | `(error: Error, errorInfo: ErrorInfo) => void` | No | - | Callback when an error is caught. |
 
 #### Example
@@ -250,6 +253,18 @@ const composed = composeTemplates({
 ---
 
 ## Types
+
+### `DSLInput`
+
+The DSL input type, which can be either a string or an object.
+
+```ts
+type DSLInput = string | DSLObject;
+```
+
+- **String**: Native infographic DSL syntax. More concise, suitable for template-based configurations. When using string DSL, `overrides` and `beforeRender` are ignored.
+- **Children (Recommended)**: String DSL passed via component's `children` prop. Provides an HTML-like template syntax that is more intuitive and preserves formatting. Use a template literal to wrap the DSL content to preserve newlines and indentation. When using children DSL, `overrides` and `beforeRender` are ignored, and `dsl` prop is ignored (children takes precedence).
+- **Object**: Structured DSL object with full TypeScript type support. Supports `overrides` and `beforeRender` hooks for dynamic modifications.
 
 ### `DSLOverride`
 

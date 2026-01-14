@@ -46,7 +46,7 @@ export function useInfographic(
     },
   );
 
-  const { refUpdate } = useRefMethods(update, { processDSL, theme: props.theme });
+  const { refUpdate } = useRefMethods((options) => update(options), { processDSL, theme: props.theme });
 
   useEffect(() => {
     on('rendered', handleRendered);

@@ -12,19 +12,22 @@
 
 | 属性 | 类型 | 必需 | 默认值 | 描述 |
 |------|------|------|--------|------|
-| `dsl` | `DSLObject` | 是 | - | 要渲染的 DSL 对象。支持可选的 `template`、`theme`、`palette`、`themeConfig` 字段。 |
-| `overrides` | `DSLOverride[]` | 否 | `[]` | 路径-值对数组，用于覆盖 DSL 值。 |
+| `children` | `string` | 条件性* | - | **（推荐）**作为组件 children 的 DSL，使用模板字符串包裹。当提供时优先级高于 `dsl` prop。必须是有效的信息图表 DSL 字符串。 |
+| `dsl` | `string \\\| DSLObject` | 条件性* | - | 要渲染的 DSL。可以是字符串（原生信息图表语法）或对象（支持 `template`、`theme`、`palette`、`themeConfig` 字段）。当提供 `children` 时被忽略。 |
+| `overrides` | `DSLOverride[]` | 否 | `[]` | 路径-值对数组，用于覆盖 DSL 值。**仅当 `dsl` 为对象时生效**。 |
 | `theme` | `string` | 否 | - | 主题名称。未提供时回退到 `dsl.theme`。 |
 | `palette` | `Palette` | 否 | - | 颜色调色板。未提供时回退到 `dsl.palette`（合并到 `themeConfig.palette`）。 |
-| `width` | `number \\| string` | 否 | `'100%'` | 容器宽度。 |
-| `height` | `number \\| string` | 否 | `'auto'` | 容器高度。 |
+| `width` | `number \\\| string` | 否 | `'100%'` | 容器宽度。 |
+| `height` | `number \\\| string` | 否 | `'auto'` | 容器高度。 |
 | `className` | `string` | 否 | - | 额外的 CSS 类名。 |
 | `editable` | `boolean` | 否 | `false` | 启用交互式编辑。 |
-| `beforeRender` | `PreRenderHook` | 否 | - | 渲染前调用的钩子，用于修改 DSL。 |
+| `beforeRender` | `PreRenderHook` | 否 | - | 渲染前调用的钩子，用于修改 DSL。**仅当 `dsl` 为对象时生效**。 |
 | `afterRender` | `PostRenderHook` | 否 | - | 渲染完成后调用的钩子。 |
 | `onRender` | `(result: InfographicRenderResult) => void` | 否 | - | 渲染完成时的回调。 |
 | `onError` | `(error: InfographicError) => void` | 否 | - | 发生错误时的回调。 |
 | `onLoad` | `(result: InfographicRenderResult) => void` | 否 | - | 所有资源加载完成时的回调。 |
+
+> *必须提供 `children` 或 `dsl` prop 中的至少一个。当两者同时提供时，`children` 优先级更高。使用模板字符串包裹的 `children` 是大多数场景的推荐方式。
 
 #### Ref
 
@@ -79,8 +82,8 @@ function App() {
 
 | 属性 | 类型 | 必需 | 默认值 | 描述 |
 |------|------|------|--------|------|
-| `children` | `ReactNode` | 是 | - | 要包裹的子组件。 |
-| `fallback` | `ReactNode \\| ((error: Error, errorInfo: ErrorInfo) => ReactNode)` | 否 | - | 自定义回退 UI。 |
+| `children` | `string` | 是 | - | 要包裹的子组件。 |
+| `fallback` | `string \\| ((error: Error, errorInfo: ErrorInfo) => ReactNode)` | 否 | - | 自定义回退 UI。 |
 | `onError` | `(error: Error, errorInfo: ErrorInfo) => void` | 否 | - | 捕获到错误时的回调。 |
 
 #### 示例
@@ -250,6 +253,18 @@ const composed = composeTemplates({
 ---
 
 ## 类型
+
+### `DSLInput`
+
+DSL 输入类型，可以是字符串或对象。
+
+```ts
+type DSLInput = string | DSLObject;
+```
+
+- **字符串**：原生信息图表 DSL 语法。更简洁，适合基于模板的配置。使用字符串 DSL 时，`overrides` 和 `beforeRender` 会被忽略。
+- **Children（推荐）**：通过组件的 `children` prop 传递的字符串 DSL。提供了类似 HTML 模板的语法，更直观且保留格式。使用模板字符串包裹 DSL 内容以保留换行和缩进。使用 children DSL 时，`overrides` 和 `beforeRender` 会被忽略，且 `dsl` prop 会被忽略（children 优先级更高）。
+- **对象**：结构化的 DSL 对象，提供完整的 TypeScript 类型支持。支持通过 `overrides` 和 `beforeRender` 钩子进行动态修改。
 
 ### `DSLOverride`
 

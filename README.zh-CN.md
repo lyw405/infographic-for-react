@@ -27,9 +27,92 @@ npm install infographic-for-react @antv/infographic
 
 ## 快速开始
 
-### 基础用法
+### 字符串 DSL
 
-使用 `Infographic` 最简单的方式是传入包含模板名称和数据配置的 `dsl` 属性。
+使用原生信息图表的字符串 DSL 语法，这种方式更简洁，适合基于模板的配置。
+
+```tsx
+import { Infographic } from 'infographic-for-react';
+
+function App() {
+  const dslString = `
+infographic 销售仪表盘
+theme
+  palette #f00 #0f0 #00f
+data
+  title 第一季度增长亮点
+  items
+    - label 月活跃用户
+      value 12.3
+    - label 营收
+      value 4.5
+`;
+
+  return (
+    <Infographic
+      dsl={dslString}
+      width={600}
+      height={400}
+    />
+  );
+}
+```
+
+> **注意**：使用字符串 DSL 时，`overrides` 和 `beforeRender` 属性会被忽略。如需使用这些功能，请使用对象 DSL。
+
+### Children DSL（推荐大多数场景）
+
+为了获得更符合 React 风格的语法，你可以将 DSL 作为组件的 children 传递。这种方式特别适合静态模板，并且能更好地保留格式和缩进。
+
+> **⚠️ 重要提示**：使用 children DSL 时，**必须**使用模板字符串 `{}` 包裹 DSL 内容，以保留换行和缩进。这样可以防止 React 合并空白字符。
+
+```tsx
+import { Infographic } from 'infographic-for-react';
+
+function App() {
+  return (
+    <Infographic width={600} height={400}>
+      {`infographic list-row-simple-horizontal-arrow
+data
+  items
+    - label 步骤 1
+      desc 开始
+    - label 步骤 2
+      desc 进行中
+    - label 步骤 3
+      desc 完成
+`}
+    </Infographic>
+  );
+}
+```
+
+```tsx
+// 你也可以使用模板字符串来动态生成内容，支持变量插值
+function App() {
+  const title = '我的仪表盘';
+  const items = [
+    { label: '月活跃用户', value: 12.3 },
+    { label: '营收', value: 4.5 },
+  ];
+
+  return (
+    <Infographic>
+      {`infographic 销售仪表盘
+data
+  title ${title}
+  items
+${items.map((item) => `    - label ${item.label}\n      value ${item.value}`).join('\n')}`}
+    </Infographic>
+  );
+}
+```
+
+> **注意**：使用 children DSL 时，`overrides` 和 `beforeRender` 属性会被忽略。如需使用这些功能，请使用对象 DSL。当提供 children 时，`dsl` 属性也会被忽略（children 优先级更高）。
+
+### 基础用法（对象 DSL）
+
+使用对象 DSL 获得完整的 TypeScript 类型支持和 `overrides`、`beforeRender` 钩子等高级功能。
 
 ```tsx
 import { Infographic } from 'infographic-for-react';
@@ -69,7 +152,34 @@ function App() {
 
 ### DSL 覆盖
 
-使用 `overrides` 属性可以通过路径选择性地修改 DSL 值，而无需重新创建整个 DSL 对象。这对于动态更新或主题切换非常有用。
+使用 `overrides` 属性可以通过路径选择性地修改 DSL 值，而无需重新创建整个 DSL 对象。这对于动态更新或主题切换非常有用。**仅适用于对象 DSL**。
+
+```tsx
+import { Infographic } from 'infographic-for-react';
+
+function App() {
+  const overrides = [
+    { path: 'data.items[0].value', value: 200 },
+  ];
+
+  return (
+    <Infographic>
+      {`infographic 销售仪表盘
+data
+  title ${title}
+  items
+${items.map((item) => `    - label ${item.label}\n      value ${item.value}`).join('\n')}`}
+    </Infographic>
+  );
+}
+```
+
+> **注意**：使用 children DSL 时，`overrides` 和 `beforeRender` 属性会被忽略。如需使用这些功能，请使用对象 DSL。当提供 children 时，`dsl` 属性也会被忽略（children 优先级更高）。
+
+
+### DSL 覆盖
+
+使用 `overrides` 属性可以通过路径选择性地修改 DSL 值，而无需重新创建整个 DSL 对象。这对于动态更新或主题切换非常有用。**仅适用于对象 DSL**。
 
 ```tsx
 import { Infographic } from 'infographic-for-react';
@@ -152,7 +262,7 @@ function App() {
 
 ### 渲染前/后钩子
 
-使用 `beforeRender` 在渲染前预处理 DSL，使用 `afterRender` 在信息图表渲染后执行操作（如日志记录、分析、自定义后处理）。
+使用 `beforeRender` 在渲染前预处理 DSL，使用 `afterRender` 在信息图表渲染后执行操作（如日志记录、分析、自定义后处理）。**仅适用于对象 DSL**。
 
 ```tsx
 import { Infographic } from 'infographic-for-react';

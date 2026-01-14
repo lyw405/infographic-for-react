@@ -7,7 +7,7 @@ interface RefMethodsProps {
 }
 
 export function useRefMethods(
-  update: (options: Partial<InfographicOptions>) => void,
+  update: (options: string | Partial<InfographicOptions>) => void,
   { processDSL, theme }: RefMethodsProps,
 ) {
   const themeRef = useRef(theme);
@@ -15,6 +15,11 @@ export function useRefMethods(
 
   const refUpdate = useCallback(
     async (options: DSLInput) => {
+      if (typeof options === 'string') {
+        update(options);
+        return;
+      }
+
       const processed: DSLObject = await processDSL(options);
       const { palette, ...restProcessed } = processed;
       const themeConfig = (processed.themeConfig || {}) as ThemeConfig;

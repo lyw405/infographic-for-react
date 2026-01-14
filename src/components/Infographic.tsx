@@ -17,12 +17,20 @@ function InfographicComponent(
   props: InfographicProps,
   ref: React.Ref<InfographicRef>,
 ) {
+  const { children, dsl: dslProp, ...restProps } = props;
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<InfographicError | null>(null);
   const [errorKey, setErrorKey] = useState(0);
+  const childrenDsl = children ? String(children).trim() : undefined;
+  const finalDsl = childrenDsl || dslProp;
+
+  if (!finalDsl) {
+    throw new Error('Either children or dsl prop must be provided');
+  }
 
   const infographicRef = useInfographic(containerRef, {
-    ...props,
+    ...restProps,
+    dsl: finalDsl,
     onError: (err) => {
       setError(err);
       props.onError?.(err);

@@ -27,9 +27,92 @@ npm install infographic-for-react @antv/infographic
 
 ## Quick Start
 
-### Basic Usage
+### String DSL (Recommended for Static Templates)
 
-The simplest way to use `Infographic` is to pass a `dsl` prop with the template name and data configuration.
+Use the native infographic string DSL syntax for a concise, template-based approach.
+
+```tsx
+import { Infographic } from 'infographic-for-react';
+
+function App() {
+  const dslString = `
+infographic sales-dashboard
+theme
+  palette #f00 #0f0 #00f
+data
+  title Q1 Growth Highlights
+  items
+    - label MAU
+      value 12.3
+    - label Revenue
+      value 4.5
+`;
+
+  return (
+    <Infographic
+      dsl={dslString}
+      width={600}
+      height={400}
+    />
+  );
+}
+```
+
+> **Note**: When using string DSL, the `overrides` and `beforeRender` props are ignored. Use object DSL if you need these features.
+
+### Children DSL (Recommended for Most Use Cases)
+
+For a more declarative and React-like syntax, pass DSL as the component's children. This is particularly useful for static templates and provides better readability with preserved formatting.
+
+> **⚠️ Important**: When using children DSL, you **must** wrap DSL content in a template literal `{}` to preserve newlines and indentation. This prevents React from collapsing whitespace.
+
+```tsx
+import { Infographic } from 'infographic-for-react';
+
+function App() {
+  return (
+    <Infographic width={600} height={400}>
+      {`infographic list-row-simple-horizontal-arrow
+data
+  items
+    - label Step 1
+      desc Start
+    - label Step 2
+      desc In Progress
+    - label Step 3
+      desc Complete
+`}
+    </Infographic>
+  );
+}
+```
+
+```tsx
+// You can also use template literals for dynamic content with variable interpolation
+function App() {
+  const title = 'My Dashboard';
+  const items = [
+    { label: 'MAU', value: 12.3 },
+    { label: 'Revenue', value: 4.5 },
+  ];
+
+  return (
+    <Infographic>
+      {`infographic sales-dashboard
+data
+  title ${title}
+  items
+${items.map((item) => `    - label ${item.label}\n      value ${item.value}`).join('\n')}`}
+    </Infographic>
+  );
+}
+```
+
+> **Note**: When using children DSL, the `overrides` and `beforeRender` props are ignored. Use object DSL if you need these features. The `dsl` prop is also ignored when children are provided (children take precedence).
+
+### Basic Usage (Object DSL)
+
+Use object DSL for full TypeScript type safety and access to advanced features like `overrides` and `beforeRender` hooks.
 
 ```tsx
 import { Infographic } from 'infographic-for-react';
@@ -69,7 +152,7 @@ function App() {
 
 ### DSL Overrides
 
-Use the `overrides` prop to selectively modify DSL values by path without recreating the entire DSL object. This is useful for dynamic updates or theming.
+Use the `overrides` prop to selectively modify DSL values by path without recreating entire DSL object. This is useful for dynamic updates or theming. **Only works with object DSL**.
 
 ```tsx
 import { Infographic } from 'infographic-for-react';
@@ -152,7 +235,7 @@ function App() {
 
 ### Pre/Post Render Hooks
 
-Use `beforeRender` to preprocess the DSL before rendering, and `afterRender` to perform actions after the infographic is rendered (e.g., logging, analytics, custom post-processing).
+Use `beforeRender` to preprocess DSL before rendering, and `afterRender` to perform actions after infographic is rendered (e.g., logging, analytics, custom post-processing). **Only works with object DSL**.
 
 ```tsx
 import { Infographic } from 'infographic-for-react';

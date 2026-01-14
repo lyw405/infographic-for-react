@@ -19,13 +19,14 @@ interface RenderControllerProps {
 
 export function useRenderController(
   containerRef: React.RefObject<HTMLElement>,
-  rendererRender: (options: Partial<InfographicOptions>) => void,
+  rendererRender: (options: string | Partial<InfographicOptions>) => void,
   props: RenderControllerProps,
   processDSL: (input: DSLObject) => Promise<DSLObject>,
   onError?: (error: unknown) => void,
 ) {
   const propsRef = useRef(props);
   const dslCacheRef = useRef<string | null>(null);
+  const stringDslCacheRef = useRef<string | null>(null);
 
   propsRef.current = props;
 
@@ -36,44 +37,52 @@ export function useRenderController(
       throw new Error('DSL prop is required');
     }
 
-    const processedDSL: DSLObject = await processDSL(dsl);
+    if (containerRef.current && className) {
+      containerRef.current.className = className;
+    }
 
-    const dslString = JSON.stringify(processedDSL);
-    if (dslCacheRef.current !== dslString) {
-      dslCacheRef.current = dslString;
-
-      const { palette, ...restDSL } = processedDSL;
-
-      const renderOptions: Partial<InfographicOptions> = { ...restDSL, data: processedDSL.data };
-
-      if (processedDSL.theme) {
-        renderOptions.theme = processedDSL.theme;
-      } else if (theme) {
-        renderOptions.theme = theme;
+    if (typeof dsl === 'string') {
+      const trimmedDsl = dsl.trim();
+      if (!trimmedDsl) {
+        throw new Error('String DSL cannot be empty or contain only whitespace');
       }
+      if (stringDslCacheRef.current !== trimmedDsl) {
+        stringDslCacheRef.current = trimmedDsl;
+        rendererRender(trimmedDsl);
+      }
+    } else {
+      const processedDSL: DSLObject = await processDSL(dsl);
 
-      if (palette) {
-        const existingThemeConfig = (processedDSL.themeConfig || {}) as ThemeConfig;
-        renderOptions.themeConfig = {
-          ...existingThemeConfig,
-          palette,
+      const dslString = JSON.stringify(processedDSL);
+      if (dslCacheRef.current !== dslString) {
+        dslCacheRef.current = dslString;
+
+        const { palette, ...restDSL } = processedDSL;
+
+        const renderOptions: Partial<InfographicOptions> = {
+          ...restDSL,
+          data: processedDSL.data,
+          width,
+          height,
+          editable,
         };
-      }
 
-      if (editable !== undefined) {
-        renderOptions.editable = editable;
-      }
+        if (processedDSL.theme) {
+          renderOptions.theme = processedDSL.theme;
+        } else if (theme) {
+          renderOptions.theme = theme;
+        }
 
-      if (width || height) {
-        renderOptions.width = width;
-        renderOptions.height = height;
-      }
+        if (palette) {
+          const existingThemeConfig = (processedDSL.themeConfig || {}) as ThemeConfig;
+          renderOptions.themeConfig = {
+            ...existingThemeConfig,
+            palette,
+          };
+        }
 
-      if (containerRef.current && className) {
-        containerRef.current.className = className;
+        rendererRender(renderOptions);
       }
-
-      rendererRender(renderOptions);
     }
   }, [containerRef, rendererRender, processDSL]);
 

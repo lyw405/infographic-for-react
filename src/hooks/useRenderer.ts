@@ -12,9 +12,16 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
   const attachedListenersRef = useRef<Map<string, Set<(...args: any[]) => void>>>(new Map());
 
   const createRenderer = useCallback(
-    async (options: Partial<InfographicOptions>): Promise<RendererInstance> => {
+    async (options: string | Partial<InfographicOptions>, container: HTMLElement): Promise<RendererInstance> => {
       const { Infographic: InfographicClass } = await import('@antv/infographic');
-      const renderer = new InfographicClass(options);
+
+      let renderer: RendererInstance;
+
+      if (typeof options === 'string') {
+        renderer = new InfographicClass(options);
+      } else {
+        renderer = new InfographicClass({ ...options, container });
+      }
 
       renderer.on('rendered', () => {
         rendererRef.current = renderer;
@@ -32,7 +39,11 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
         console.error('[Infographic-for-React] Renderer error:', error);
       });
 
-      renderer.render();
+      if (typeof options === 'string') {
+        renderer.render({ container });
+      } else {
+        renderer.render();
+      }
 
       return renderer;
     },
@@ -40,24 +51,26 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
   );
 
   const render = useCallback(
-    async (options: Partial<InfographicOptions>) => {
+    async (options: string | Partial<InfographicOptions>) => {
       const container = containerRef.current;
       if (!container) {
         throw new Error('Container element not found');
       }
 
-      const renderOptions = { ...options, container };
-
       if (rendererRef.current) {
-        rendererRef.current.update(renderOptions);
+        if (typeof options === 'string') {
+          rendererRef.current.update(options);
+        } else {
+          rendererRef.current.update({ ...options, container });
+        }
       } else {
-        await createRenderer(renderOptions);
+        await createRenderer(options, container);
       }
     },
     [containerRef, createRenderer],
   );
 
-  const update = useCallback((options: Partial<InfographicOptions>) => {
+  const update = useCallback((options: string | Partial<InfographicOptions>) => {
     if (!rendererRef.current) {
       throw new Error('Renderer not initialized. Call render first.');
     }
