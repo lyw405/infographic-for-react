@@ -1,9 +1,9 @@
-# @antv/infographic-react
+# infographic-for-react
 
 > React 组件库 for @antv/infographic - 基于组件化的声明式信息图表生成封装。
 
-[![npm version](https://img.shields.io/npm/v/@antv/infographic-react.svg)](https://www.npmjs.com/package/@antv/infographic-react)
-[![license](https://img.shields.io/npm/l/@antv/infographic-react.svg)](https://github.com/lyw405/infographic-for-react/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/infographic-for-react.svg)](https://www.npmjs.com/package/infographic-for-react)
+[![license](https://img.shields.io/npm/l/infographic-for-react.svg)](https://github.com/lyw405/infographic-for-react/blob/main/LICENSE)
 
 ## 特性
 
@@ -19,7 +19,7 @@
 ## 安装
 
 ```bash
-npm install @antv/infographic-react @antv/infographic
+npm install infographic-for-react @antv/infographic
 ```
 
 ## 快速开始
@@ -27,7 +27,7 @@ npm install @antv/infographic-react @antv/infographic
 ### 基础用法
 
 ```tsx
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   const dsl = JSON.stringify({
@@ -58,7 +58,7 @@ function App() {
 ### 使用模板
 
 ```tsx
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   return (
@@ -75,7 +75,7 @@ function App() {
 ### DSL 覆盖
 
 ```tsx
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   const dsl = JSON.stringify({ /* 基础 DSL */ });
@@ -92,7 +92,7 @@ function App() {
 ### 使用 Hooks
 
 ```tsx
-import { useInfographic } from '@antv/infographic-react';
+import { useInfographic } from 'infographic-for-react';
 import { useRef } from 'react';
 
 function App() {
@@ -123,7 +123,7 @@ function App() {
 ### 渲染前/后钩子
 
 ```tsx
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   const beforeRender = (dsl: string) => {

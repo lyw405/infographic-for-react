@@ -34,15 +34,7 @@ export function useInfographic(
         return input;
       }
 
-      if (input.type === 'dsl') {
-        return input.value;
-      }
-
-      if (input.type === 'template') {
-        return input.value;
-      }
-
-      throw new Error('Invalid DSL input type');
+      return JSON.stringify(input);
     },
     [],
   );
@@ -189,10 +181,20 @@ export function useInfographic(
     return debouncedRender.cancel;
   }, [debouncedRender]);
 
+  const refUpdate = useCallback(
+    async (options: DSLInput) => {
+      const input = typeof options === 'string' ? options : JSON.stringify(options);
+      const processed = await processDSL(input);
+      const renderOptions = { ...JSON.parse(processed) };
+      update(renderOptions);
+    },
+    [update, processDSL],
+  );
+
   const ref: InfographicRef = {
     toDataURL,
     getTypes,
-    update,
+    update: refUpdate,
     destroy,
   };
 

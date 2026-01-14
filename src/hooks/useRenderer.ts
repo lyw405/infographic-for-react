@@ -8,15 +8,24 @@ import type {
 export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
   const rendererRef = useRef<RendererInstance | null>(null);
   const isInitializedRef = useRef(false);
+  const pendingListenersRef = useRef<Map<string, Set<(...args: any[]) => void>>>(new Map());
 
   const createRenderer = useCallback(
-    (options: string | Partial<InfographicOptions>): RendererInstance => {
-      const { Infographic: InfographicClass } = eval('require')('@antv/infographic');
-      const renderer = new InfographicClass(options) as RendererInstance;
+    async (options: string | Partial<InfographicOptions>): Promise<RendererInstance> => {
+      // @ts-ignore - Dynamic import of @antv/infographic
+      const { Infographic: InfographicClass } = await import('@antv/infographic');
+      const renderer = new InfographicClass(options);
 
       renderer.on('rendered', () => {
         rendererRef.current = renderer;
         isInitializedRef.current = true;
+
+        pendingListenersRef.current.forEach((listeners, event) => {
+          listeners.forEach((listener) => {
+            renderer.on(event, listener);
+          });
+        });
+        pendingListenersRef.current.clear();
       });
 
       renderer.on('error', (error) => {
@@ -29,7 +38,7 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
   );
 
   const render = useCallback(
-    (options: string | Partial<InfographicOptions>) => {
+    async (options: string | Partial<InfographicOptions>) => {
       const container = containerRef.current;
       if (!container) {
         throw new Error('Container element not found');
@@ -43,7 +52,7 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
       if (rendererRef.current) {
         rendererRef.current.update(renderOptions);
       } else {
-        const renderer = createRenderer(renderOptions);
+        const renderer = await createRenderer(renderOptions);
         renderer.render();
       }
     },
@@ -84,14 +93,24 @@ export function useRenderer(containerRef: React.RefObject<HTMLElement>) {
 
   const on = useCallback((event: string, listener: (...args: any[]) => void) => {
     if (!rendererRef.current) {
-      throw new Error('Renderer not initialized');
+      const listeners = pendingListenersRef.current.get(event) || new Set();
+      listeners.add(listener);
+      pendingListenersRef.current.set(event, listeners);
+      return;
     }
     rendererRef.current.on(event, listener);
   }, []);
 
   const off = useCallback((event: string, listener: (...args: any[]) => void) => {
     if (!rendererRef.current) {
-      throw new Error('Renderer not initialized');
+      const listeners = pendingListenersRef.current.get(event);
+      if (listeners) {
+        listeners.delete(listener);
+        if (listeners.size === 0) {
+          pendingListenersRef.current.delete(event);
+        }
+      }
+      return;
     }
     rendererRef.current.off(event, listener);
   }, []);

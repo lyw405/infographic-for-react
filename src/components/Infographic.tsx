@@ -36,8 +36,6 @@ function InfographicComponent(
     overflow: 'hidden',
   };
 
-  const isDev = typeof import.meta.env.DEV !== 'undefined' && import.meta.env.DEV === true;
-
   return (
     <>
       <div
@@ -87,25 +85,6 @@ function InfographicComponent(
           >
             Retry
           </button>
-          {isDev && error.details ? (
-            <details style={{ marginTop: '15px', textAlign: 'left', maxWidth: '80%' }}>
-              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>
-                Error Details
-              </summary>
-              <pre
-                style={{
-                  marginTop: '10px',
-                  padding: '10px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                  borderRadius: '4px',
-                  overflow: 'auto',
-                  fontSize: '12px',
-                }}
-              >
-                {String(error.details)}
-              </pre>
-            </details>
-          ) : null}
         </div>
       )}
     </>

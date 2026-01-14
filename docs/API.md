@@ -38,7 +38,7 @@ The component exposes a ref with the following methods:
 
 ```tsx
 import { useRef } from 'react';
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   const ref = useRef(null);
@@ -83,7 +83,7 @@ Error boundary component for catching React errors.
 #### Example
 
 ```tsx
-import { ErrorBoundary, Infographic } from '@antv/infographic-react';
+import { ErrorBoundary, Infographic } from 'infographic-for-react';
 
 function App() {
   return (
@@ -120,7 +120,7 @@ An object with methods:
 
 ```tsx
 import { useRef, useCallback } from 'react';
-import { useInfographic } from '@antv/infographic-react';
+import { useInfographic } from 'infographic-for-react';
 
 function App() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -178,7 +178,7 @@ Apply path-value overrides to a DSL string.
 #### Example
 
 ```tsx
-import { applyOverrides } from '@antv/infographic-react';
+import { applyOverrides } from 'infographic-for-react';
 
 const dsl = JSON.stringify({ design: { title: { text: 'Old' } } });
 const overrides = [
@@ -198,7 +198,7 @@ Deep merge two DSL strings.
 #### Example
 
 ```tsx
-import { mergeDSL } from '@antv/infographic-react';
+import { mergeDSL } from 'infographic-for-react';
 
 const dsl1 = JSON.stringify({ a: 1, b: { x: 10 } });
 const dsl2 = JSON.stringify({ b: { y: 20 }, c: 3 });
@@ -221,7 +221,7 @@ Compose multiple templates into a single DSL.
 #### Example
 
 ```tsx
-import { composeTemplates } from '@antv/infographic-react';
+import { composeTemplates } from 'infographic-for-react';
 
 const headerDSL = JSON.stringify({ /* header config */ });
 const bodyDSL = JSON.stringify({ /* body config */ });

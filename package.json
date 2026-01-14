@@ -1,5 +1,5 @@
 {
-  "name": "@antv/infographic-react",
+  "name": "infographic-for-react",
   "version": "0.1.0",
   "description": "React components for @antv/infographic - a declarative, component-based wrapper for infographic generation",
   "keywords": [
@@ -21,7 +21,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     }
@@ -43,16 +43,16 @@
     "prepublishOnly": "npm run ci"
   },
   "peerDependencies": {
+    "@antv/infographic": "^0.2.7",
     "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "@antv/infographic": "^0.2.7"
+    "react-dom": ">=16.8.0"
   },
   "devDependencies": {
     "@antv/infographic": "^0.2.7",
-    "@types/lodash-es": "^4.17.12",
-    "@types/node": "^24.3.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^24.3.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitest/coverage-v8": "^3.2.4",

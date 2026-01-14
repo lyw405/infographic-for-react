@@ -61,7 +61,7 @@ export class ErrorBoundary extends Component<
       >
         <h2 style={{ marginTop: 0 }}>Something went wrong</h2>
         <p>{error.message}</p>
-        {import.meta.env.DEV && errorInfo && (
+        {errorInfo && (
           <details style={{ marginTop: '10px' }}>
             <summary>Stack trace</summary>
             <pre

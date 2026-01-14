@@ -1,47 +1,38 @@
-export interface ThemeConfig {
-  name?: string;
-  colors?: Record<string, string>;
+import type {
+  ThemeConfig,
+  Palette,
+  InfographicOptions,
+  ExportOptions,
+  SyntaxError,
+} from '@antv/infographic';
+
+export type { ThemeConfig, Palette, InfographicOptions, ExportOptions, SyntaxError };
+
+export interface DSLItem {
+  label: string;
+  desc?: string;
+  icon?: string;
+  illus?: string;
+  value?: number;
+  children?: DSLItem[];
 }
 
-export interface Palette {
-  name?: string;
-  colors: string[];
+export interface DSLData {
+  title: string;
+  desc?: string;
+  items: DSLItem[];
 }
 
-export interface SyntaxError {
-  message: string;
-  line?: number;
-  column?: number;
+export interface DSLTheme {
+  name: string;
+  palette: string;
 }
 
-export interface InfographicOptions {
-  container?: HTMLElement;
-  width?: number | string;
-  height?: number | string;
-  theme?: ThemeConfig;
-  palette?: Palette;
-  editable?: boolean;
-  design?: unknown;
-  data?: unknown;
+export interface DSLObject extends Partial<InfographicOptions> {
+  data: DSLData;
 }
 
-export type ExportOptions = {
-  type?: 'svg' | 'png';
-  quality?: number;
-  scale?: number;
-};
-
-export interface DSLString {
-  type: 'dsl';
-  value: string;
-}
-
-export interface TemplateName {
-  type: 'template';
-  value: string;
-}
-
-export type DSLInput = string | DSLString | TemplateName;
+export type DSLInput = string | DSLObject;
 
 export interface DSLOverride {
   path: string;
@@ -50,7 +41,7 @@ export interface DSLOverride {
 
 export interface InfographicRenderResult {
   node: SVGSVGElement;
-  options: InfographicOptions;
+  options: Partial<InfographicOptions>;
 }
 
 export interface InfographicError {
@@ -83,16 +74,16 @@ export interface InfographicProps {
 
 export interface InfographicRef {
   toDataURL: (options?: ExportOptions) => Promise<string>;
-  getTypes: () => string[] | undefined;
-  update: (options: string | Partial<InfographicOptions>) => void;
+  getTypes: () => string | undefined;
+  update: (options: DSLInput) => Promise<void>;
   destroy: () => void;
 }
 
 export interface RendererInstance {
-  render: () => boolean;
+  render: (options?: string | Partial<InfographicOptions>) => void;
   update: (options: string | Partial<InfographicOptions>) => void;
   toDataURL: (options?: ExportOptions) => Promise<string>;
-  getTypes: () => string[] | undefined;
+  getTypes: () => string | undefined;
   destroy: () => void;
   on: (event: string, listener: (...args: any[]) => void) => void;
   off: (event: string, listener: (...args: any[]) => void) => void;

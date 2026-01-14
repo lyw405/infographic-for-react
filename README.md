@@ -1,9 +1,9 @@
-# @antv/infographic-react
+# infographic-for-react
 
 > React components for @antv/infographic - a declarative, component-based wrapper for infographic generation.
 
-[![npm version](https://img.shields.io/npm/v/@antv/infographic-react.svg)](https://www.npmjs.com/package/@antv/infographic-react)
-[![license](https://img.shields.io/npm/l/@antv/infographic-react.svg)](https://github.com/lyw405/infographic-for-react/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/infographic-for-react.svg)](https://www.npmjs.com/package/infographic-for-react)
+[![license](https://img.shields.io/npm/l/infographic-for-react.svg)](https://github.com/lyw405/infographic-for-react/blob/main/LICENSE)
 
 ## Features
 
@@ -19,7 +19,7 @@
 ## Installation
 
 ```bash
-npm install @antv/infographic-react @antv/infographic
+npm install infographic-for-react @antv/infographic
 ```
 
 ## Quick Start
@@ -27,7 +27,7 @@ npm install @antv/infographic-react @antv/infographic
 ### Basic Usage
 
 ```tsx
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   const dsl = JSON.stringify({
@@ -58,7 +58,7 @@ function App() {
 ### Using Templates
 
 ```tsx
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   return (
@@ -75,7 +75,7 @@ function App() {
 ### DSL Overrides
 
 ```tsx
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   const dsl = JSON.stringify({ /* base DSL */ });
@@ -92,7 +92,7 @@ function App() {
 ### Using Hooks
 
 ```tsx
-import { useInfographic } from '@antv/infographic-react';
+import { useInfographic } from 'infographic-for-react';
 import { useRef } from 'react';
 
 function App() {
@@ -123,7 +123,7 @@ function App() {
 ### Pre/Post Render Hooks
 
 ```tsx
-import { Infographic } from '@antv/infographic-react';
+import { Infographic } from 'infographic-for-react';
 
 function App() {
   const beforeRender = (dsl: string) => {
